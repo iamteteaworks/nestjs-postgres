@@ -1,6 +1,7 @@
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { BaseEntity } from '../base.entity';
 import { Workout } from './workouts.entity';
+import { WorkoutExercise } from './workout_exercises.entity';
 
 @Entity('workout_days')
 export class WorkoutDay extends BaseEntity {
@@ -13,4 +14,7 @@ export class WorkoutDay extends BaseEntity {
 
   @Column({ type: 'varchar', nullable: true })
   description: string | null;
+
+  @OneToMany(() => WorkoutExercise, (ex) => ex.workoutDay)
+  exercises: WorkoutExercise[];
 }

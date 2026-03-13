@@ -1,6 +1,7 @@
-import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm';
 import { BaseEntity } from '../base.entity';
 import { User } from './users.entity';
+import { WorkoutDay } from './workout_days.entity';
 
 @Entity('workouts')
 export class Workout extends BaseEntity {
@@ -13,4 +14,7 @@ export class Workout extends BaseEntity {
 
   @Column()
   notes: string;
+
+  @OneToMany(() => WorkoutDay, (day) => day.workout)
+  days: WorkoutDay[];
 }
