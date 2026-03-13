@@ -12,5 +12,8 @@ export class WorkoutExercise extends BaseEntity {
   name: string;
 
   @Column({ type: 'varchar', nullable: true })
-  description: string | null;
+  set: string | null;
+
+  @Column({ type: 'varchar', nullable: true })
+  reps: string | null;
 }

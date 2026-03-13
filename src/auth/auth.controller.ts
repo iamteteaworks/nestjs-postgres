@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
-import { User } from 'src/database/core/user.entity';
+import { User } from 'src/database/core/users.entity';
 import { AuthTokens } from './types/auth-tokens.type';
 
 @Controller('auth')
@@ -18,7 +18,13 @@ export class AuthController {
     user: User;
     tokens: AuthTokens;
   }> {
-    return this.authService.validateOAuthUser(req.user);
+    return this.authService.validateOAuthUser({
+      email: req.user.email,
+      username: req.user.username,
+      avatarPath: req.user.avatarPath ?? undefined,
+      authProvider: req.user.authProvider,
+      authProviderId: req.user.authProviderId,
+    });
   }
 
   @Post('refresh')
