@@ -1,14 +1,17 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from 'src/database/core/user.entity';
 import { AuthProvider } from 'src/enum/user.enum';
+import { AuthTokens } from './types/auth-tokens.type';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
+    private readonly jwtService: JwtService,
   ) {}
 
   async validateOAuthUser(payload: {
@@ -17,7 +20,7 @@ export class AuthService {
     avatarPath?: string;
     authProvider: AuthProvider;
     authProviderId: string;
-  }): Promise<User> {
+  }): Promise<{ user: User; tokens: AuthTokens }> {
     const { email, username, avatarPath, authProvider, authProviderId } =
       payload;
 
@@ -46,6 +49,43 @@ export class AuthService {
       user.authProviderId = authProviderId;
     }
 
-    return this.usersRepository.save(user);
+    const savedUser = await this.usersRepository.save(user);
+
+    const tokens = this.generateTokens(savedUser);
+
+    return { user: savedUser, tokens };
+  }
+
+  private generateTokens(user: User): AuthTokens {
+    const payload = { sub: user.id, email: user.email };
+
+    const accessToken = this.jwtService.sign(payload);
+    const refreshToken = this.jwtService.sign(payload, {
+      secret: process.env.JWT_REFRESH_SECRET,
+      expiresIn: (process.env.JWT_ACCESS_EXPIRES_IN ??
+        '1d') as `${number}${'d' | 'h' | 'm' | 's'}`,
+    });
+
+    return { accessToken, refreshToken };
+  }
+
+  async refreshTokens(refreshToken: string): Promise<AuthTokens> {
+    try {
+      const payload = this.jwtService.verify<{ sub: string }>(refreshToken, {
+        secret: process.env.JWT_REFRESH_SECRET,
+      });
+
+      const user = await this.usersRepository.findOne({
+        where: { id: payload.sub },
+      });
+
+      if (!user) {
+        throw new UnauthorizedException();
+      }
+
+      return this.generateTokens(user);
+    } catch {
+      throw new UnauthorizedException();
+    }
   }
 }
