@@ -168,7 +168,7 @@ Returns the same json structure as the Google callback (user + tokens).
 
 ---
 
-### 8. Testing
+### 5. Testing
 
 ```bash
 # unit tests
