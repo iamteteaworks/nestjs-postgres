@@ -23,6 +23,16 @@ export class AuthController {
     return this.authService.validateOAuthUser(req.user);
   }
 
+  @Get('profile')
+  @UseGuards(AuthGuard('jwt'))
+  profile(@Req() req: { user: User }): {
+    user: User;
+    tokens: AuthTokens;
+  } {
+    const tokens = this.authService.generateTokens(req.user);
+    return { user: req.user, tokens };
+  }
+
   @Post('refresh')
   async refresh(
     @Body('refreshToken') refreshToken: string,

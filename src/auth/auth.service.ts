@@ -56,7 +56,7 @@ export class AuthService {
     return { user: savedUser, tokens };
   }
 
-  private generateTokens(user: User): AuthTokens {
+  generateTokens(user: User): AuthTokens {
     const payload = { sub: user.id, email: user.email };
 
     const accessToken = this.jwtService.sign(payload);
