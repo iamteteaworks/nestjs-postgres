@@ -50,9 +50,7 @@ export class AuthService {
     }
 
     const savedUser = await this.usersRepository.save(user);
-
     const tokens = this.generateTokens(savedUser);
-
     return { user: savedUser, tokens };
   }
 
@@ -79,10 +77,7 @@ export class AuthService {
         where: { id: payload.sub },
       });
 
-      if (!user) {
-        throw new UnauthorizedException();
-      }
-
+      if (!user) throw new UnauthorizedException();
       return this.generateTokens(user);
     } catch {
       throw new UnauthorizedException();

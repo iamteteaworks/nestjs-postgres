@@ -10,9 +10,7 @@ export class AuthController {
 
   @Get('google')
   @UseGuards(AuthGuard('google'))
-  async googleAuth() {
-    // Initiates Google OAuth2 login flow
-  }
+  async googleAuth() {}
 
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
@@ -23,6 +21,14 @@ export class AuthController {
     return this.authService.validateOAuthUser(req.user);
   }
 
+  @Post('refresh')
+  async refresh(
+    @Body('refreshToken') refreshToken: string,
+  ): Promise<AuthTokens> {
+    const tokens = await this.authService.refreshTokens(refreshToken);
+    return tokens;
+  }
+
   @Get('profile')
   @UseGuards(AuthGuard('jwt'))
   profile(@Req() req: { user: User }): {
@@ -31,13 +37,5 @@ export class AuthController {
   } {
     const tokens = this.authService.generateTokens(req.user);
     return { user: req.user, tokens };
-  }
-
-  @Post('refresh')
-  async refresh(
-    @Body('refreshToken') refreshToken: string,
-  ): Promise<AuthTokens> {
-    const tokens = await this.authService.refreshTokens(refreshToken);
-    return tokens;
   }
 }
